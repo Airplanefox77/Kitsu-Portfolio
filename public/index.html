@@ -6,46 +6,92 @@
   <title>Kitsu — Portfolio</title>
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root{
-      --glass: rgba(255,255,255,.18);
-      --stroke: rgba(255,255,255,.35);
-      --pink: #ff4fd8;
-      --blue: #5ac8ff;
-      --purple: #A200FF;
-    }
-    html,body{height:100%;}
-    body{
-      /* Soft gradient with transparent vibes */
-      background: radial-gradient(1200px 800px at 10% 10%, rgba(255, 79, 216,.25), transparent 70%),
-                  radial-gradient(1000px 700px at 90% 20%, rgba(90, 200, 255,.25), transparent 70%),
-                  linear-gradient(180deg, #0b0f14, #0b0f14);
-      color: #f7f9fc;
-    }
-    .glass{
-      background: var(--glass);
-      backdrop-filter: blur(14px) saturate(140%);
-      -webkit-backdrop-filter: blur(14px) saturate(140%);
-      border: 1px solid var(--stroke);
-      box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.15);
-    }
-    .accent-text{ background: linear-gradient(90deg, var(--pink), var(--blue)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .tag{ border:1px solid rgba(255,255,255,.35); }
+ <style>
+  :root {
+    --glass: rgba(255,255,255,.18);
+    --stroke: rgba(255,255,255,.35);
+    --pink: #ff4fd8;
+    --blue: #5ac8ff;
+    --purple: #A200FF;
+  }
 
-    /* Editable outline */
-    [contenteditable="true"]{ outline: 2px dashed rgba(255,255,255,.25); outline-offset: 2px; border-radius: .75rem; }
-    .hidden-edit-toggle{ opacity:.25; transition: opacity .2s, transform .2s; }
-    .hidden-edit-toggle:hover{ opacity:1; transform: scale(1.05); }
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
 
-    /* Scrollbar subtle */
-    ::-webkit-scrollbar{ width:8px; height:8px }
-    ::-webkit-scrollbar-thumb{ background: linear-gradient(var(--pink), var(--blue)); border-radius:999px }
+  body {
+    /* Advanced layered background w/ soft gradients + fixed scaling */
+    background: 
+      radial-gradient(1200px 800px at 10% 10%, rgba(255, 79, 216,.25), transparent 70%),
+      radial-gradient(1000px 700px at 90% 20%, rgba(90, 200, 255,.25), transparent 70%),
+      linear-gradient(180deg, #0b0f14, #0b0f14),
+      linear-gradient(180deg, #f9f9f9, #e0e0e0); /* subtle extra depth layer */
+    background-size: cover;
+    background-attachment: fixed;
+    color: #f7f9fc;
+  }
 
-    /* Link underline glow */
-    .glow-link{ position:relative; }
-    .glow-link::after{ content:""; position:absolute; left:0; bottom:-2px; width:100%; height:2px;
-      background: linear-gradient(90deg, var(--pink), var(--blue)); border-radius:99px; opacity:.8 }
-  </style>
+  .glass {
+    background: var(--glass);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid var(--stroke);
+    box-shadow: 0 10px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.15);
+  }
+
+  .accent-text {
+    background: linear-gradient(90deg, var(--pink), var(--blue));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .tag {
+    border: 1px solid rgba(255,255,255,.35);
+  }
+
+  [contenteditable="true"] {
+    outline: 2px dashed rgba(255,255,255,.25);
+    outline-offset: 2px;
+    border-radius: .75rem;
+  }
+
+  .hidden-edit-toggle {
+    opacity: .25;
+    transition: opacity .2s, transform .2s;
+  }
+  .hidden-edit-toggle:hover {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(var(--pink), var(--blue));
+    border-radius: 999px;
+  }
+
+  .glow-link {
+    position: relative;
+  }
+  .glow-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--pink), var(--blue));
+    border-radius: 99px;
+    opacity: .8;
+  }
+</style>
 </head>
 <body class="min-h-full">
   <!-- Top nav -->
