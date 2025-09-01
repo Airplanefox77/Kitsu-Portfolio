@@ -27,7 +27,6 @@
   }
 
   body {
-    /* Advanced layered background */
     background:
       radial-gradient(1200px 800px at 10% 10%, rgba(255, 79, 216,.25), transparent 70%),
       radial-gradient(1000px 700px at 90% 20%, rgba(90, 200, 255,.25), transparent 70%),
@@ -39,7 +38,6 @@
     color: #f7f9fc;
   }
 
-  /* Glassy panels */
   .glass {
     background: var(--glass);
     backdrop-filter: blur(14px) saturate(140%);
@@ -107,12 +105,18 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
-    color: #000; /* readable on white */
+    color: #000;
   }
   .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0,0,0,0.2);
   }
+
+  /* Work-card tweaks (keeps glass style but readable) */
+  .work-card {
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .work-card:hover { transform: translateY(-4px); }
 
   /* Modal */
   .modal {
@@ -126,26 +130,37 @@
     background: rgba(0,0,0,0.6);
     justify-content: center;
     align-items: center;
-    animation: fadeIn 0.3s ease forwards;
+    animation: fadeIn 0.25s ease forwards;
     padding: 24px;
   }
   .modal-content {
     background: white;
-    padding: 20px;
+    padding: 22px;
     border-radius: 16px;
-    max-width: 720px;
+    max-width: 780px;
     width: 100%;
-    text-align: center;
-    animation: scaleUp 0.3s ease forwards;
+    text-align: left;
+    animation: scaleUp 0.25s ease forwards;
     color: #000;
     position: relative;
   }
+  .modal .modal-header {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .modal .modal-title { font-size:1.25rem; font-weight:700; }
+  .modal .modal-body { margin-top:12px; color:#222; }
+  .modal .modal-tags { margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; }
+  .modal .modal-thumbnail {
+    width:96px; height:96px; border-radius:12px; object-fit:cover; background:#f3f3f3; flex-shrink:0;
+  }
+
   .close {
-    font-size: 24px;
+    font-size: 28px;
     cursor: pointer;
     position: absolute;
     right: 14px;
     top: 10px;
+    color: #444;
   }
 
   @keyframes fadeIn {
@@ -157,11 +172,11 @@
     to {transform: scale(1);}
   }
 
-  /* small responsive niceties */
   @media (max-width: 640px) {
     .glass { padding: 14px; }
+    .modal .modal-header { flex-direction:column; align-items:flex-start; gap:8px; }
+    .modal .modal-thumbnail { width:100%; height:160px; border-radius:10px; }
   }
-
 </style>
 </head>
 <body class="min-h-full">
@@ -169,7 +184,6 @@
   <header class="sticky top-0 z-40">
     <div class="glass mx-auto max-w-6xl mt-4 rounded-2xl px-5 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <!-- Avatar (uses your GitHub avatar URL, falls back to letter K) -->
         <div class="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center" style="min-width:36px; min-height:36px;">
           <img id="avatar" src="https://avatars.githubusercontent.com/u/105670354?v=4" alt="Kitsu avatar" class="w-9 h-9 rounded-full object-cover" onerror="this.style.display='none'; document.getElementById('avatarFallback').style.display='flex'">
           <div id="avatarFallback" class="w-9 h-9 rounded-full flex items-center justify-center" style="display:none; background:linear-gradient(135deg,var(--pink),var(--blue));">
@@ -184,8 +198,6 @@
         <a href="#work" class="hover:text-white glow-link">Work</a>
         <a href="#contact" class="hover:text-white glow-link">Contact</a>
       </nav>
-
-      <!-- NOTE: Edit button removed for now as requested. Secret bow remains below. -->
     </div>
   </header>
 
@@ -207,7 +219,6 @@
         </div>
         <div class="mt-6 flex gap-3">
           <a href="#work" class="glass rounded-xl px-4 py-2">See my work →</a>
-          <!-- Secret bow still present as a hidden entrypoint to editing -->
           <button id="secretBow" class="rounded-xl px-4 py-2 border border-white/30" title=":3">🎀</button>
         </div>
       </div>
@@ -254,7 +265,8 @@
     </div>
     <div class="grid md:grid-cols-3 gap-6">
       <!-- Card 1 -->
-      <article class="work-card glass rounded-3xl p-6 cursor-pointer" data-card>
+      <article class="work-card glass rounded-3xl p-6 cursor-pointer" role="button" tabindex="0"
+               data-modal-id="info-w1">
         <h3 class="font-semibold text-lg" contenteditable="false" data-edit-key="w1-title">AGS — Advanced Game Status</h3>
         <p class="text-white/80" contenteditable="false" data-edit-key="w1-desc">Discord Rich Presence tool that auto-detects games and updates details like mission/location.</p>
         <div class="mt-3 flex flex-wrap gap-2 text-xs">
@@ -262,8 +274,10 @@
           <span class="tag glass rounded-full px-3 py-1" contenteditable="false" data-edit-key="w1-tag2">Desktop</span>
         </div>
       </article>
+
       <!-- Card 2 -->
-      <article class="work-card glass rounded-3xl p-6 cursor-pointer" data-card>
+      <article class="work-card glass rounded-3xl p-6 cursor-pointer" role="button" tabindex="0"
+               data-modal-id="info-w2">
         <h3 class="font-semibold text-lg" contenteditable="false" data-edit-key="w2-title">Void Saga — Writing</h3>
         <p class="text-white/80" contenteditable="false" data-edit-key="w2-desc">A group of kids meets Vortex in The Void — searching for Voreluim crystals and new worlds.</p>
         <div class="mt-3 flex flex-wrap gap-2 text-xs">
@@ -271,8 +285,10 @@
           <span class="tag glass rounded-full px-3 py-1" contenteditable="false" data-edit-key="w2-tag2">Draft</span>
         </div>
       </article>
+
       <!-- Card 3 -->
-      <article class="work-card glass rounded-3xl p-6 cursor-pointer" data-card>
+      <article class="work-card glass rounded-3xl p-6 cursor-pointer" role="button" tabindex="0"
+               data-modal-id="info-w3">
         <h3 class="font-semibold text-lg" contenteditable="false" data-edit-key="w3-title">Sketchbook — Characters</h3>
         <p class="text-white/80" contenteditable="false" data-edit-key="w3-desc">Pencil-and-paper designs: bows, hoodies with sakura sleeves, and expressive foxes.</p>
         <div class="mt-3 flex flex-wrap gap-2 text-xs">
@@ -280,12 +296,6 @@
           <span class="tag glass rounded-full px-3 py-1" contenteditable="false" data-edit-key="w3-tag2">Pencil</span>
         </div>
       </article>
-
-      <!-- Example Card (the one you asked to add) -->
-      <div class="card glass rounded-3xl p-6 cursor-pointer" onclick="openCard('info1')">
-        <h3 class="font-semibold text-lg">Example Card — Click me!</h3>
-        <p class="text-sm mt-2">Open a hidden modal with more info. This demonstrates the modal system.</p>
-      </div>
     </div>
   </section>
 
@@ -313,32 +323,18 @@
     </div>
   </footer>
 
-  <!-- Hidden Info Modal (example) -->
-  <div class="modal" id="info1" aria-hidden="true" role="dialog" aria-labelledby="info1Title">
-    <div class="modal-content">
-      <span class="close" onclick="closeCard('info1')" aria-label="Close">&times;</span>
-      <h2 id="info1Title">More Information</h2>
-      <p class="mt-4">This is expanded content! You can put screenshots, links, or longer descriptions here.</p>
-      <div class="mt-4">
-        <button onclick="closeCard('info1')" class="rounded-lg px-4 py-2 border border-black/10">Close</button>
-      </div>
-    </div>
-  </div>
+  <!-- Container where dynamic modals will be appended -->
+  <div id="modals-root"></div>
 
   <script>
-    // ===== Editable mode with password gate =====
-    // NOTE: Client-side only! This is a friendly gate, not real security.
-    const SECRET = 'kitsubow-2025'; // <-- change this to your own secret
-
-    // removed visible Edit button per request
+    // ===== Editable mode with password gate (kept hidden edit flow) =====
+    const SECRET = 'kitsubow-2025'; // change if you like
     const secretBow = document.getElementById('secretBow');
     const saveBtn = document.getElementById('saveBtn');
     const cancelBtn = document.getElementById('cancelBtn');
     const resetBtn = document.getElementById('resetBtn');
-
     const yearEl = document.getElementById('year');
     yearEl.textContent = new Date().getFullYear();
-
     const editables = Array.from(document.querySelectorAll('[data-edit-key]'));
 
     function setEditing(on){
@@ -348,89 +344,141 @@
       resetBtn.classList.toggle('hidden', !on);
       document.body.classList.toggle('editing', on);
     }
-
     function askPassword(){
       const input = prompt('Enter the secret to edit (hint: bow):');
       if(input === SECRET){ return true; }
       alert('Nope! Wrong secret.');
       return false;
     }
-
     function loadSaved(){
       const saved = JSON.parse(localStorage.getItem('kitsu-portfolio')||'{}');
       editables.forEach(el=>{ const key = el.dataset.editKey; if(saved[key] !== undefined){ el.innerHTML = saved[key]; } });
     }
-
     function saveAll(){
       const data = {};
       editables.forEach(el=>{ data[el.dataset.editKey] = el.innerHTML; });
       localStorage.setItem('kitsu-portfolio', JSON.stringify(data));
     }
-
     function resetAll(){
       if(!confirm('Reset all edits back to default?')) return;
       localStorage.removeItem('kitsu-portfolio');
       location.reload();
     }
-
-    // Work cards expand/collapse visual effect only
-    document.querySelectorAll('[data-card]').forEach(card=>{
-      card.addEventListener('click', ()=>{
-        card.classList.toggle('ring-2');
-        card.classList.toggle('ring-white/40');
-        card.classList.toggle('scale-[1.01]');
-      });
-    });
-
-    // Hidden entry points to editing
-    secretBow.addEventListener('click', ()=>{
-      if(askPassword()) setEditing(true);
-    });
-
-    // Keyboard shortcut Ctrl/Cmd + E to toggle editing (with password when enabling)
+    secretBow.addEventListener('click', ()=>{ if(askPassword()) setEditing(true); });
     window.addEventListener('keydown', (e)=>{
       const isCtrlE = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e';
       if(isCtrlE){
         e.preventDefault();
-        if(document.body.classList.contains('editing')){
-          setEditing(false);
-        }else{
-          if(askPassword()) setEditing(true);
-        }
+        if(document.body.classList.contains('editing')){ setEditing(false); }
+        else{ if(askPassword()) setEditing(true); }
       }
-      // Escape to close modals
-      if(e.key === 'Escape'){
-        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-      }
+      if(e.key === 'Escape'){ closeAllModals(); }
     });
-
-    // Buttons
     saveBtn.addEventListener('click', ()=>{ saveAll(); setEditing(false); alert('Saved locally ✨'); });
     cancelBtn.addEventListener('click', ()=>{ setEditing(false); loadSaved(); });
     resetBtn.addEventListener('click', resetAll);
-
-    // Autosave on blur during editing
-    document.addEventListener('focusout', (e)=>{
-      if(document.body.classList.contains('editing') && e.target?.dataset?.editKey){ saveAll(); }
-    });
-
-    // Persist across reloads
+    document.addEventListener('focusout', (e)=>{ if(document.body.classList.contains('editing') && e.target?.dataset?.editKey){ saveAll(); } });
     loadSaved();
 
-    // ===== Modal helpers (open/close) =====
-    function openCard(id) {
-      // Close any open modals first
-      document.querySelectorAll('.modal').forEach(m => { m.style.display = 'none'; m.setAttribute('aria-hidden','true'); });
-      const modal = document.getElementById(id);
-      if(modal){
-        modal.style.display = 'flex';
-        modal.setAttribute('aria-hidden','false');
-        // focus the first focusable element if helpful
-        const focusable = modal.querySelector('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])');
-        if(focusable) focusable.focus();
-      }
-      // Prevent body scroll while modal is open
+    // ===== Work-card -> modal system =====
+    const modalsRoot = document.getElementById('modals-root');
+
+    // helper to sanitize & clone HTML safely for modal (we use innerText for editable content to avoid scripts)
+    function getCardData(card) {
+      const titleEl = card.querySelector('[data-edit-key^="w"][data-edit-key$="-title"]') || card.querySelector('h3');
+      const descEl  = card.querySelector('[data-edit-key^="w"][data-edit-key$="-desc"]')  || card.querySelector('p');
+      const tagEls  = card.querySelectorAll('[data-edit-key^="w"][data-edit-key*="tag"]') || [];
+      return {
+        id: card.dataset.modalId || ('modal-' + Math.random().toString(36).slice(2,9)),
+        title: titleEl ? titleEl.innerText.trim() : 'Untitled',
+        desc: descEl ? descEl.innerText.trim() : '',
+        tags: Array.from(tagEls).map(t => t.innerText.trim()).filter(Boolean),
+      };
+    }
+
+    // build a modal DOM node for a card (if not already created)
+    function ensureModalForCard(card) {
+      const data = getCardData(card);
+      let modal = document.getElementById(data.id);
+      if(modal) return modal;
+
+      // create modal element
+      modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.id = data.id;
+      modal.setAttribute('aria-hidden', 'true');
+      modal.setAttribute('role', 'dialog');
+
+      // modal inner HTML -- uses safe text content
+      modal.innerHTML = `
+        <div class="modal-content glass" role="document">
+          <span class="close" data-close aria-label="Close">&times;</span>
+          <div class="modal-header">
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div class="modal-thumbnail" aria-hidden="true"></div>
+              <div>
+                <div class="modal-title">${escapeHtml(data.title)}</div>
+                <div class="text-sm text-black/60 mt-1">${escapeHtml(data.desc).slice(0,140)}</div>
+              </div>
+            </div>
+            <div style="min-width:120px; text-align:right;">
+              <div class="text-xs text-black/50">Tags</div>
+              <div class="modal-tags"></div>
+            </div>
+          </div>
+          <div class="modal-body">
+            <p>${escapeHtml(data.desc).replace(/\n/g,'<br>')}</p>
+          </div>
+        </div>
+      `.trim();
+
+      // populate tags area
+      const tagsContainer = modal.querySelector('.modal-tags');
+      data.tags.forEach(t=>{
+        const span = document.createElement('span');
+        span.className = 'tag glass rounded-full px-3 py-1 text-xs';
+        span.textContent = t;
+        tagsContainer.appendChild(span);
+      });
+
+      // append to root
+      modalsRoot.appendChild(modal);
+
+      // events: close btn & click outside
+      modal.querySelector('[data-close]').addEventListener('click', ()=> closeCard(data.id));
+      modal.addEventListener('click', (e)=>{
+        if(e.target === modal){ closeCard(data.id); }
+      });
+
+      return modal;
+    }
+
+    // Escape HTML to avoid accidental HTML injection if users edit content
+    function escapeHtml(str){
+      if(!str) return '';
+      return String(str)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    // open a card modal by element or id
+    function openCardFromElement(card){
+      // toggle small ring/scale effect for visual feedback
+      card.classList.toggle('ring-2');
+      card.classList.toggle('ring-white/40');
+      card.classList.toggle('scale-[1.01]');
+
+      const modal = ensureModalForCard(card);
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden','false');
       document.body.style.overflow = 'hidden';
+
+      // focus the close button for keyboard users
+      const closeBtn = modal.querySelector('[data-close]');
+      if(closeBtn) closeBtn.focus();
     }
 
     function closeCard(id) {
@@ -438,36 +486,53 @@
       if(modal){
         modal.style.display = 'none';
         modal.setAttribute('aria-hidden','true');
-      } else {
-        // If id not found, close all
-        document.querySelectorAll('.modal').forEach(m => { m.style.display = 'none'; m.setAttribute('aria-hidden','true'); });
       }
       document.body.style.overflow = '';
+      // remove any ring/scale classes from all cards (clean up)
+      document.querySelectorAll('.work-card').forEach(c => {
+        c.classList.remove('ring-2','ring-white/40','scale-[1.01]');
+      });
     }
 
-    // Close modal if click outside content
-    document.querySelectorAll('.modal').forEach(m => {
-      m.addEventListener('click', (e) => {
-        if(e.target === m){
-          m.style.display = 'none';
-          m.setAttribute('aria-hidden','true');
-          document.body.style.overflow = '';
+    function closeAllModals(){
+      document.querySelectorAll('.modal').forEach(m => {
+        m.style.display = 'none';
+        m.setAttribute('aria-hidden','true');
+      });
+      document.body.style.overflow = '';
+      document.querySelectorAll('.work-card').forEach(c => {
+        c.classList.remove('ring-2','ring-white/40','scale-[1.01]');
+      });
+    }
+
+    // attach click + keyboard handlers to all work-cards
+    document.querySelectorAll('.work-card').forEach(card=>{
+      // make sure it has a modal id
+      if(!card.dataset.modalId){
+        card.dataset.modalId = 'info-' + Math.random().toString(36).slice(2,8);
+      }
+      card.addEventListener('click', ()=> openCardFromElement(card));
+      // open modal also on Enter/Space for accessibility
+      card.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          openCardFromElement(card);
         }
       });
     });
 
-    // Accessibility: trap focus inside modal when open (lightweight)
-    document.addEventListener('focusin', (e)=>{
-      const openModal = Array.from(document.querySelectorAll('.modal')).find(m => m.style.display === 'flex');
-      if(openModal){
-        if(!openModal.contains(e.target)){
-          // keep focus inside modal
-          const focusable = openModal.querySelector('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])');
-          if(focusable) focusable.focus();
-        }
-      }
+    // close all modals on Escape (already handled in keydown earlier for editing flow, but keep safe)
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape'){ closeAllModals(); }
+    });
+
+    // on window resize ensure no scroll lock remains accidentally
+    window.addEventListener('resize', ()=> {
+      const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'flex');
+      document.body.style.overflow = anyOpen ? 'hidden' : '';
     });
 
   </script>
 </body>
 </html>
+
