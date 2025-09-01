@@ -113,8 +113,59 @@
   }
 
   /* Work-card tweaks (keeps glass style but readable) */
-  .work-card {
-    transition: transform .18s ease, box-shadow .18s ease;
+  /* Work cards */
+.work-card {
+  background: var(--glass);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid var(--stroke);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  color: #f7f9fc;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* subtle animated gradient border */
+.work-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--pink), var(--blue), var(--purple));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, 
+                 linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+
+.work-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 12px 24px rgba(0,0,0,.35);
+  border-color: transparent;
+}
+
+.work-card:hover::before {
+  opacity: 1;
+}
+
+.work-card h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: .5rem;
+}
+
+.work-card p {
+  font-size: .9rem;
+  line-height: 1.4;
+  color: rgba(255,255,255,.85);
+}
+
   }
   .work-card:hover { transform: translateY(-4px); }
 
