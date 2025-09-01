@@ -24,6 +24,9 @@
 
   html {
     scroll-behavior: smooth;
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: linear-gradient(var(--pink),var(--blue)) transparent;
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -72,6 +75,7 @@
     transform: scale(1.05);
   }
 
+  /* thin chromium scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -113,7 +117,6 @@
   }
 
   /* Work-card tweaks (keeps glass style but readable) */
-  /* Work cards */
 .work-card {
   background: var(--glass);
   backdrop-filter: blur(12px) saturate(140%);
@@ -166,8 +169,7 @@
   color: rgba(255,255,255,.85);
 }
 
-  }
-  .work-card:hover { transform: translateY(-4px); }
+.work-card:hover { transform: translateY(-4px); }
 
   /* Modal */
   /* Modal overlay */
@@ -180,7 +182,7 @@
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .3s ease;
+  transition: opacity .25s ease;
   z-index: 1000;
 }
 
@@ -201,9 +203,19 @@
   box-shadow: 0 20px 40px rgba(0, 0, 0, .4);
   max-width: 600px;
   width: 90%;
-  animation: modal-pop .35s ease;
   position: relative;
   color: #f8f9ff;
+
+  /* smooth open/close */
+  transform: translateY(20px) scale(.98);
+  opacity: 0;
+  transition: transform .28s cubic-bezier(.2,.9,.2,1), opacity .28s ease;
+}
+
+/* when modal active: animate in */
+.modal.active .modal-content {
+  transform: translateY(0) scale(1);
+  opacity: 1;
 }
 
 /* Gradient border shimmer */
@@ -220,12 +232,6 @@
           mask-composite: exclude;
   pointer-events: none;
   opacity: 0.9;
-}
-
-/* Pop animation */
-@keyframes modal-pop {
-  from { transform: scale(.9) translateY(20px); opacity: 0; }
-  to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 /* Close button */
@@ -251,6 +257,11 @@
   background: rgba(255,255,255,.25);
 }
 
+/* Pop animation (fallback) */
+@keyframes modal-pop {
+  from { transform: scale(.9) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
 
   @media (max-width: 640px) {
     .glass { padding: 14px; }
@@ -329,9 +340,9 @@
       <aside class="glass rounded-3xl p-8">
         <h3 class="text-xl font-semibold mb-3">Quick links</h3>
         <ul class="space-y-2 text-white/80">
-          <li>🌐 <a class="https://github.com/Airplanefox77" href="#" contenteditable="false" data-edit-key="link-1">Website / GitHub</a></li>
+          <li>🌐 <a href="https://github.com/Airplanefox77" target="_blank" rel="noopener" contenteditable="false" data-edit-key="link-1">Website / GitHub</a></li>
           <li>📷 <a class="glow-link" href="#" contenteditable="false" data-edit-key="link-2">Art Gallery</a></li>
-          <li>💬 <a class="https://discord.gg/cPzdp6sx8B" href="#" contenteditable="false" data-edit-key="link-3">Discord Server: The Collective!</a></li>
+          <li>💬 <a href="https://discord.gg/cPzdp6sx8B" target="_blank" rel="noopener" contenteditable="false" data-edit-key="link-3">Discord Server: The Collective!</a></li>
         </ul>
       </aside>
     </div>
@@ -385,7 +396,7 @@
       <h2 class="text-2xl font-bold">Let's talk</h2>
       <p class="text-white/80" contenteditable="false" data-edit-key="contact-msg">Wanna collab or just say hi? Drop a message on Discord or send an email. I don't bite, I just nibble fwuit. owo</p>
       <div class="mt-4 grid sm:grid-cols-2 gap-4">
-        <a class="glass rounded-2xl px-4 py-3 text-center" href="#" contenteditable="false" data-edit-key="contact-1">📧 Email: vortexvoidthrone@gmail.com</a>
+        <a class="glass rounded-2xl px-4 py-3 text-center" href="mailto:vortexvoidthrone@gmail.com" contenteditable="false" data-edit-key="contact-1">📧 Email: vortexvoidthrone@gmail.com</a>
         <a class="glass rounded-2xl px-4 py-3 text-center" href="#" contenteditable="false" data-edit-key="contact-2">💬 Discord: sakura_kitsu</a>
       </div>
     </div>
@@ -452,7 +463,7 @@
         if(document.body.classList.contains('editing')){ setEditing(false); }
         else{ if(askPassword()) setEditing(true); }
       }
-      if(e.key === 'Escape'){ closeAllModals(); }
+      if(e.key === 'Escape'){ /* handled per-modal */ }
     });
     saveBtn.addEventListener('click', ()=>{ saveAll(); setEditing(false); alert('Saved locally ✨'); });
     cancelBtn.addEventListener('click', ()=>{ setEditing(false); loadSaved(); });
@@ -460,10 +471,21 @@
     document.addEventListener('focusout', (e)=>{ if(document.body.classList.contains('editing') && e.target?.dataset?.editKey){ saveAll(); } });
     loadSaved();
 
-    // ===== Work-card -> modal system =====
+    // ===== helpers for modal system =====
     const modalsRoot = document.getElementById('modals-root');
 
-    // helper to sanitize & clone HTML safely for modal (we use innerText for editable content to avoid scripts)
+    // Escape HTML to avoid accidental HTML injection if users edit content
+    function escapeHtml(str){
+      if(!str && str !== '') return '';
+      return String(str)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    // helper to read card content safely
     function getCardData(card) {
       const titleEl = card.querySelector('[data-edit-key^="w"][data-edit-key$="-title"]') || card.querySelector('h3');
       const descEl  = card.querySelector('[data-edit-key^="w"][data-edit-key$="-desc"]')  || card.querySelector('p');
@@ -480,7 +502,24 @@
     function ensureModalForCard(card) {
       const data = getCardData(card);
       let modal = document.getElementById(data.id);
-      if(modal) return modal;
+      if(modal) {
+        // update tags/title/desc in case the card was edited
+        const title = modal.querySelector('.modal-title');
+        const body = modal.querySelector('.modal-body p');
+        const tagContainer = modal.querySelector('.modal-tags');
+        if(title) title.textContent = data.title;
+        if(body) body.innerHTML = escapeHtml(data.desc).replace(/\n/g,'<br>');
+        if(tagContainer){
+          tagContainer.innerHTML = '';
+          data.tags.forEach(t=>{
+            const span = document.createElement('span');
+            span.className = 'tag glass rounded-full px-3 py-1 text-xs';
+            span.textContent = t;
+            tagContainer.appendChild(span);
+          });
+        }
+        return modal;
+      }
 
       // create modal element
       modal = document.createElement('div');
@@ -488,26 +527,27 @@
       modal.id = data.id;
       modal.setAttribute('aria-hidden', 'true');
       modal.setAttribute('role', 'dialog');
+      modal.tabIndex = -1;
 
       // modal inner HTML -- uses safe text content
       modal.innerHTML = `
-        <div class="modal-content glass" role="document">
-          <span class="close" data-close aria-label="Close">&times;</span>
-          <div class="modal-header">
+        <div class="modal-content glass" role="document" aria-modal="true">
+          <button class="modal-close" data-close aria-label="Close">&times;</button>
+          <div class="modal-header" style="display:flex; gap:12px; align-items:center; justify-content:space-between;">
             <div style="display:flex; gap:12px; align-items:center;">
-              <div class="modal-thumbnail" aria-hidden="true"></div>
+              <div class="modal-thumbnail" aria-hidden="true" style="width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,var(--pink),var(--blue));"></div>
               <div>
-                <div class="modal-title">${escapeHtml(data.title)}</div>
-                <div class="text-sm text-black/60 mt-1">${escapeHtml(data.desc).slice(0,140)}</div>
+                <div class="modal-title" style="font-weight:700;color:#fff;">${escapeHtml(data.title)}</div>
+                <div class="text-sm text-black/60 mt-1" style="color: rgba(255,255,255,0.85);">${escapeHtml(data.desc).slice(0,140)}</div>
               </div>
             </div>
             <div style="min-width:120px; text-align:right;">
-              <div class="text-xs text-black/50">Tags</div>
-              <div class="modal-tags"></div>
+              <div class="text-xs" style="color: rgba(255,255,255,0.65);">Tags</div>
+              <div class="modal-tags" style="display:flex;gap:6px;justify-content:flex-end;margin-top:6px;"></div>
             </div>
           </div>
-          <div class="modal-body">
-            <p>${escapeHtml(data.desc).replace(/\n/g,'<br>')}</p>
+          <div class="modal-body" style="margin-top:16px;">
+            <p style="color: rgba(255,255,255,0.9);">${escapeHtml(data.desc).replace(/\n/g,'<br>')}</p>
           </div>
         </div>
       `.trim();
@@ -525,50 +565,76 @@
       modalsRoot.appendChild(modal);
 
       // events: close btn & click outside
-      modal.querySelector('[data-close]').addEventListener('click', ()=> closeCard(data.id));
+      const closeBtn = modal.querySelector('[data-close]');
+      if(closeBtn){
+        closeBtn.addEventListener('click', ()=> closeCard(data.id));
+      }
+
       modal.addEventListener('click', (e)=>{
         if(e.target === modal){ closeCard(data.id); }
+      });
+
+      // trap tab focus inside modal & handle Escape
+      modal.addEventListener('keydown', (e)=>{
+        if(e.key === 'Escape'){ closeCard(data.id); return; }
+        if(e.key !== 'Tab') return;
+        const focusable = Array.from(modal.querySelectorAll('a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'))
+          .filter(el => el.offsetParent !== null);
+        if(focusable.length === 0){ e.preventDefault(); return; }
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if(e.shiftKey && document.activeElement === first){
+          e.preventDefault();
+          last.focus();
+        } else if(!e.shiftKey && document.activeElement === last){
+          e.preventDefault();
+          first.focus();
+        }
       });
 
       return modal;
     }
 
-    // Escape HTML to avoid accidental HTML injection if users edit content
-    function escapeHtml(str){
-      if(!str) return '';
-      return String(str)
-        .replaceAll('&','&amp;')
-        .replaceAll('<','&lt;')
-        .replaceAll('>','&gt;')
-        .replaceAll('"','&quot;')
-        .replaceAll("'", '&#39;');
-    }
-
     // open a card modal by element or id
     function openCardFromElement(card){
-      // toggle small ring/scale effect for visual feedback
-      card.classList.toggle('ring-2');
-      card.classList.toggle('ring-white/40');
-      card.classList.toggle('scale-[1.01]');
+      // visual feedback classes on the clicked card
+      card.classList.add('ring-2','ring-white/40','scale-[1.01]');
 
       const modal = ensureModalForCard(card);
-      modal.style.display = 'flex';
+      modal.classList.add('active');
       modal.setAttribute('aria-hidden','false');
+
+      // remember previous focus for returning later
+      modal._previouslyFocused = document.activeElement;
+
+      // lock scroll
       document.body.style.overflow = 'hidden';
 
       // focus the close button for keyboard users
       const closeBtn = modal.querySelector('[data-close]');
-      if(closeBtn) closeBtn.focus();
+      if(closeBtn) {
+        // small delay to ensure the focusable element is ready
+        setTimeout(()=> closeBtn.focus(), 50);
+      } else {
+        setTimeout(()=> modal.focus(), 50);
+      }
     }
 
     function closeCard(id) {
       const modal = document.getElementById(id);
       if(modal){
-        modal.style.display = 'none';
+        modal.classList.remove('active');
         modal.setAttribute('aria-hidden','true');
+
+        // restore previous focus if present
+        try {
+          const prev = modal._previouslyFocused;
+          if(prev && typeof prev.focus === 'function') prev.focus();
+        } catch(e){}
       }
-      document.body.style.overflow = '';
-      // remove any ring/scale classes from all cards (clean up)
+      // if no more active modals, restore scroll
+      const stillOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.classList.contains('active'));
+      if(!stillOpen) document.body.style.overflow = '';
+      // remove visual feedback classes from all cards (clean up)
       document.querySelectorAll('.work-card').forEach(c => {
         c.classList.remove('ring-2','ring-white/40','scale-[1.01]');
       });
@@ -576,7 +642,7 @@
 
     function closeAllModals(){
       document.querySelectorAll('.modal').forEach(m => {
-        m.style.display = 'none';
+        m.classList.remove('active');
         m.setAttribute('aria-hidden','true');
       });
       document.body.style.overflow = '';
@@ -601,14 +667,18 @@
       });
     });
 
-    // close all modals on Escape (already handled in keydown earlier for editing flow, but keep safe)
+    // close all modals on Escape globally (defensive)
     window.addEventListener('keydown', (e)=>{
-      if(e.key === 'Escape'){ closeAllModals(); }
+      if(e.key === 'Escape'){ 
+        // close the topmost active modal (or all)
+        const active = document.querySelector('.modal.active');
+        if(active) closeCard(active.id);
+      }
     });
 
     // on window resize ensure no scroll lock remains accidentally
     window.addEventListener('resize', ()=> {
-      const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'flex');
+      const anyOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.classList.contains('active'));
       document.body.style.overflow = anyOpen ? 'hidden' : '';
     });
 
